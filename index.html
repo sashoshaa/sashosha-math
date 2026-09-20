@@ -14,8 +14,8 @@ header{display:flex;justify-content:space-between;align-items:center;margin-bott
 .card{background:rgba(248,227,235,.97);border:2px solid var(--blue);border-radius:30px;box-shadow:0 12px 35px #7187a522}
 .home{padding:32px 26px}.center{text-align:center}.stars{color:var(--blue2);letter-spacing:10px;font-size:20px}.eyebrow{display:inline-block;margin-top:7px;border:2px solid var(--blue);border-radius:999px;background:#fff;padding:8px 20px;color:var(--blue2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 h1{font-family:"Playfair Display",serif;font-style:italic;color:var(--blue2);font-size:clamp(43px,7vw,72px);line-height:1.03;margin:22px 0 12px}.lead{max-width:700px;margin:0 auto 28px;line-height:1.55;color:var(--muted)}
-.section-title{margin:28px 0 13px;font-size:20px}.topics{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;text-align:left}.topic{background:#fff;border:2px solid transparent;border-radius:21px;padding:19px;transition:.2s;cursor:pointer}.topic:hover{border-color:var(--blue);transform:translateY(-2px)}.topic-icon{font-size:25px}.topic h3{margin:9px 0 6px}.topic p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}.topic .mini{margin-top:13px;color:var(--blue2);font-weight:700;font-size:12px}.topic.mistakes{border-color:var(--blue);background:linear-gradient(#fff,var(--pink))}
-.level-panel{margin-top:25px;background:#fff;border-radius:24px;padding:21px;text-align:left}.level-panel h2{margin:0 0 13px;font-size:19px}.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.level{border:1.5px solid #ccd7e5;background:#fff;border-radius:15px;padding:13px}.level b{display:block;margin-bottom:4px}.level span{display:block;color:var(--muted);font-size:11px;line-height:1.4}.start{border:0;background:var(--blue2);color:#fff;border-radius:11px;padding:10px;width:100%;margin-top:9px;font-weight:800}.locked{opacity:.52}
+.section-title{margin:28px 0 13px;font-size:20px}.topics{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;text-align:left}.topic{background:#fff;border:2px solid transparent;border-radius:21px;padding:19px;transition:.2s;cursor:pointer}.topic:hover{border-color:var(--blue);transform:translateY(-2px)}.topic-icon{font-size:25px}.topic h3{margin:9px 0 6px}.topic p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}.topic .mini{margin-top:13px;color:var(--blue2);font-weight:700;font-size:12px}.topic.mistakes{border-color:var(--blue);background:linear-gradient(#fff,var(--pink))}.topic.picked{border-color:var(--blue);cursor:default}.topic.picked:hover{transform:none}
+.level-panel{display:none;margin-top:16px;background:#fff;border-radius:24px;padding:21px;text-align:left}.level-panel h2{display:none}.home.picking .level-panel{display:block}.home.picking #homeHero{display:none}.home.picking .topics{grid-template-columns:1fr;max-width:460px}.home.picking .section-title{margin-top:4px}.topic-back{display:none}.home.picking .topic-back{display:inline-block;margin:0 0 2px;padding:0}.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.level{border:1.5px solid #ccd7e5;background:#fff;border-radius:15px;padding:13px}.level b{display:block;margin-bottom:4px}.level span{display:block;color:var(--muted);font-size:11px;line-height:1.4}.start{border:0;background:var(--blue2);color:#fff;border-radius:11px;padding:10px;width:100%;margin-top:9px;font-weight:800}.locked{opacity:.52}
 .setup-label{font-size:11px;font-weight:800;color:#7b8591;text-transform:uppercase;letter-spacing:.07em;margin:4px 0 9px}.chips{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 16px}.chip{border:1.5px solid #ccd7e5;background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;color:var(--ink)}.chip.on{background:var(--blue2);color:#fff;border-color:var(--blue2)}
 .foot{text-align:center;color:#718099;font-size:12px;margin-top:18px}
 .trainer,.result{display:none;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px}.back{border:0;background:none;color:var(--blue2);font-weight:800;padding:8px}.pills{display:flex;gap:7px;flex-wrap:wrap}.pill{background:#fff;border:1px solid var(--blue);border-radius:99px;padding:7px 11px;font-size:12px}
@@ -37,13 +37,13 @@ h1{font-family:"Playfair Display",serif;font-style:italic;color:var(--blue2);fon
 <header><div class="logo">sashosha math</div><a class="handle" href="https://t.me/sashoshamath" target="_blank" rel="noopener noreferrer">@sashoshamath</a></header>
 
 <section id="home" class="card home">
-<div class="center"><div class="stars">★ ★ ★</div><div class="eyebrow">математический тренажёр</div>
+<div id="homeHero" class="center"><div class="stars">★ ★ ★</div><div class="eyebrow">математический тренажёр</div>
 <h1>Математика без паники</h1>
 <p class="lead">Выбирай тему, проходи уровни сложности и тренируйся в своём темпе. Сначала таблица умножения, дальше — уравнения, дроби и другие темы.</p></div>
-<h2 class="section-title">выбери тему</h2>
+<button type="button" id="topicsBack" class="back topic-back" onclick="showTopics()">← ко всем темам</button>
+<h2 class="section-title" id="topicsTitle">выбери тему</h2>
 <div id="topics" class="topics"></div>
 <div id="levelPanel" class="level-panel">
-<h2 id="selectedTitle">таблица умножения</h2>
 <div id="levels" class="levels"></div>
 </div>
 <div class="foot">sashosha math · <a class="tg" href="https://t.me/sashoshamath" target="_blank" rel="noopener noreferrer">@sashoshamath</a></div>
@@ -601,20 +601,35 @@ function praise(){
  return pick(praises);
 }
 
-function renderTopics(){
+function renderTopics(onlyId){
  const box=document.getElementById('topics');box.innerHTML='';
- if(mistakes.length){
+ if(!onlyId && mistakes.length){
   const e=document.createElement('div');e.className='topic mistakes';e.onclick=startMistakes;
   e.innerHTML=`<div class="topic-icon">♡</div><h3>Тренажёр ошибок</h3><p>Повтори то, где споткнулась. Сейчас ${mistakes.length} ${mistakes.length===1?'задание':mistakes.length<5?'задания':'заданий'}.</p><div class="mini">разобрать ошибки →</div>`;
   box.appendChild(e);
  }
- topics.forEach(t=>{const e=document.createElement('div');e.className='topic';e.onclick=()=>selectTopic(t.id);e.innerHTML=`<div class="topic-icon">${t.icon}</div><h3>${t.title}</h3><p>${t.desc}</p><div class="mini">выбрать тему →</div>`;box.appendChild(e)});
+ const list=onlyId?topics.filter(t=>t.id===onlyId):topics;
+ list.forEach(t=>{
+  const e=document.createElement('div');
+  e.className='topic'+(onlyId?' picked':'');
+  if(!onlyId)e.onclick=()=>selectTopic(t.id);
+  e.innerHTML=`<div class="topic-icon">${t.icon}</div><h3>${t.title}</h3><p>${t.desc}</p>${onlyId?'':'<div class="mini">выбрать тему →</div>'}`;
+  box.appendChild(e);
+ });
+}
+function showTopics(){
+ document.getElementById('home').classList.remove('picking');
+ document.getElementById('topicsTitle').textContent='выбери тему';
+ renderTopics();
+ window.scrollTo({top:0,behavior:'smooth'});
 }
 function chip(on,click,label){return `<button type="button" class="chip ${on?'on':''}" onclick="${click}">${label}</button>`}
 function selectTopic(id){
  selected=id;
  const t=topics.find(x=>x.id===id);
- document.getElementById('selectedTitle').textContent=t.title;
+ document.getElementById('home').classList.add('picking');
+ document.getElementById('topicsTitle').textContent='выбери уровень';
+ renderTopics(id);
  const box=document.getElementById('levels');
  if(id==='multiply'){
   box.className='';
@@ -622,11 +637,13 @@ function selectTopic(id){
   box.innerHTML=`<div class="setup-label">на какую таблицу?</div><div class="chips">${nums}</div>
 <div class="setup-label">что тренируем?</div><div class="chips">${chip(mulOp==='mul',`setMulOp('mul')`,'умножение')}${chip(mulOp==='div',`setMulOp('div')`,'деление')}${chip(mulOp==='both',`setMulOp('both')`,'вместе')}</div>
 <button class="start" onclick="startGame(0)">Начать</button>`;
+  window.scrollTo({top:0,behavior:'smooth'});
   return;
  }
  box.className='levels';
  box.innerHTML='';
  t.levels.forEach((l,i)=>{const key=id+'_'+i,open=i===0||unlocked[key];const e=document.createElement('div');e.className='level '+(!open?'locked':'');e.innerHTML=`<b>${i+1}. ${l[0]}</b><span>${l[1]}</span><button class="start" ${open?'':'disabled'} onclick="startGame(${i})">${open?'Начать':'🔒 закрыт'}</button>`;box.appendChild(e)});
+ window.scrollTo({top:0,behavior:'smooth'});
 }
 function setMulTable(v){mulTable=v;selectTopic('multiply')}
 function setMulOp(v){mulOp=v;selectTopic('multiply')}
@@ -834,13 +851,13 @@ function shareTelegram(){
  window.open('https://t.me/share/url?url='+encodeURIComponent('https://t.me/sashoshamath')+'&text='+encodeURIComponent(text),'_blank','noopener');
 }
 function restart(){if(state.topic==='mistakes')startMistakes();else startGame(state.level)}
-function goHome(){document.getElementById('trainer').style.display='none';document.getElementById('result').style.display='none';document.getElementById('home').style.display='block';renderTopics();selectTopic(selected==='mistakes'?'multiply':selected)}
+function goHome(){document.getElementById('trainer').style.display='none';document.getElementById('result').style.display='none';document.getElementById('home').style.display='block';showTopics()}
 function onEnter(e){if(e.key==='Enter')check()}
 ['answer','ansX','ansY'].forEach(id=>{
  const el=document.getElementById(id);
  el.addEventListener('keydown',onEnter);
  el.addEventListener('focus',()=>{lastInput=el});
 });
-renderTopics();selectTopic('multiply');
+renderTopics();
 </script>
 </body></html>
