@@ -272,21 +272,28 @@ function parseSet(raw){
  return {kind:'set',vals};
 }
 
+function mulItem(a,b){
+ const p=a*b;
+ return {text:`${a} × ${b} = ?`,ans:N(p),steps:[`${a} × ${b} = ${p}`],h:`${a} × ${b} — посчитай по таблице.`};
+}
+function divItem(a,b){
+ const p=a*b;
+ return {text:`${p} ÷ ${a} = ?`,ans:N(b),steps:[`${a} × ${b} = ${p}`,`значит ${p} ÷ ${a} = ${b}`],h:`${a} × ${b} = ${p}, значит ${p} ÷ ${a} = ${b}.`};
+}
+function buildMulQueue(){
+ const table=mulTable;
+ const op=mulOp;
+ const bases=table==='all'?[2,3,4,5,6,7,8,9]:[+table];
+ const times=[1,2,3,4,5,6,7,8,9,10];
+ const qs=[];
+ bases.forEach(a=>times.forEach(b=>{
+  if(op!=='div')qs.push(mulItem(a,b));
+  if(op==='div'||op==='both')qs.push(divItem(a,b));
+ }));
+ return shuffle(qs);
+}
 function qMultiply(){
- const table=state.mulTable==null?mulTable:state.mulTable;
- const op=state.mulOp==null?mulOp:state.mulOp;
- const a=table==='all'?rnd(2,9):+table;
- const b=rnd(2,9);
- const doDiv=op==='div'||(op==='both'&&rnd(0,1)===1);
- if(doDiv){
-  const prod=a*b;
-  if(rnd(0,1)){
-   return {text:`${prod} ÷ ${a} = ?`,ans:N(b),h:`${a} × ${b} = ${prod}, значит ${prod} ÷ ${a} = ${b}.`};
-  }
-  return {text:`${prod} ÷ ${b} = ?`,ans:N(a),h:`${a} × ${b} = ${prod}, значит ${prod} ÷ ${b} = ${a}.`};
- }
- if(rnd(0,1)) return {text:`${a} × ${b} = ?`,ans:N(a*b),h:`${a} × ${b} — посчитай по таблице.`};
- return {text:`${b} × ${a} = ?`,ans:N(a*b),h:`${b} × ${a} — посчитай по таблице.`};
+ return buildMulQueue()[0];
 }
 function qLinear(level){
  const wantFrac=level>=4||(level>=1&&rnd(0,2)===0);
@@ -670,7 +677,11 @@ function selectTopic(id){
 }
 function setMulTable(v){mulTable=v;selectTopic('multiply')}
 function setMulOp(v){mulOp=v;selectTopic('multiply')}
-function startGame(level){state={topic:selected,level,q:0,correct:0,points:0,streak:0,best:0,answered:false,current:null,mulTable,mulOp,total:10,seen:[]};document.getElementById('home').style.display='none';document.getElementById('result').style.display='none';document.getElementById('trainer').style.display='block';load()}
+function startGame(level){
+ const queue=selected==='multiply'?buildMulQueue():null;
+ state={topic:selected,level,q:0,correct:0,points:0,streak:0,best:0,answered:false,current:null,mulTable,mulOp,total:queue?queue.length:10,seen:[],queue};
+ document.getElementById('home').style.display='none';document.getElementById('result').style.display='none';document.getElementById('trainer').style.display='block';load();
+}
 function startMistakes(){
  if(!mistakes.length)return;
  const queue=shuffle(mistakes).slice(0,10);
@@ -686,9 +697,9 @@ function showEq(q){
 }
 function load(){
  const t=topics.find(x=>x.id===state.topic);
- if(state.topic==='mistakes'){
+ if(state.queue){
   state.current=state.queue[state.q];
-  if(state.current)state.current.srcTopic=state.current.srcTopic||state.current.topic;
+  if(state.topic==='mistakes'&&state.current)state.current.srcTopic=state.current.srcTopic||state.current.topic;
  }else{
   state.current=uniqueQ(state.topic,state.level);
   if(!state.current.steps||!state.current.steps.length)state.current.steps=state.current.h?[state.current.h]:[];
