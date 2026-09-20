@@ -112,6 +112,11 @@ let lastInput=null,shareUrl='',nextTimer=null;
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function pick(arr){return arr[rnd(0,arr.length-1)]}
 function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t}return a||1}
+function reduceTip(n,d){
+ const g=gcd(n,d);
+ if(g<=1) return 'Сокращать не нужно — дробь уже несократима.';
+ return `Сократи на ${g}: раздели числитель и знаменатель на ${g}.`;
+}
 function simp(n,d){if(d<0){n=-n;d=-d}const g=gcd(n,d);return {kind:'num',n:n/g,d:d/g}}
 function N(n,d){return simp(n,d==null?1:d)}
 function inf(sign){return {kind:'num',inf:sign}}
@@ -373,23 +378,23 @@ function qArithmetic(level){
 
 function qFraction(level){
  if(level===0)return pick([
-  ()=>{const d=rnd(2,9),n=rnd(1,d-1);return {text:`${n}/${d} + ${n}/${d} = ?`,ans:N(2*n,d),h:'Знаменатель тот же — сложи числители. Можно сократить.'}},
-  ()=>{const d=rnd(3,10),n=rnd(2,d-1),m=rnd(1,n-1);return {text:`${n}/${d} − ${m}/${d} = ?`,ans:N(n-m,d),h:'Знаменатели одинаковые — вычти числители.'}},
-  ()=>{let n=rnd(4,18),d=rnd(4,18);const g=gcd(n,d);if(g===1){n*=rnd(2,4);d*=rnd(2,3)}return {text:`Сократи ${n}/${d}`,ans:N(n,d),h:`Раздели числитель и знаменатель на ${gcd(n,d)}.`}},
-  ()=>{const d=rnd(3,9),n=rnd(1,d-1),m=rnd(1,d-1);return {text:`${n}/${d} + ${m}/${d} = ?`,ans:N(n+m,d),h:'Сложи числители, знаменатель не меняй. Сократи, если получится.'}}
+  ()=>{const d=rnd(2,9),n=rnd(1,d-1),s=2*n;return {text:`${n}/${d} + ${n}/${d} = ?`,ans:N(s,d),h:`Знаменатель тот же — сложи числители: ${n} + ${n} = ${s}. ${reduceTip(s,d)}`}},
+  ()=>{const d=rnd(3,10),n=rnd(2,d-1),m=rnd(1,n-1),s=n-m;return {text:`${n}/${d} − ${m}/${d} = ?`,ans:N(s,d),h:`Знаменатели одинаковые — вычти числители: ${n} − ${m} = ${s}. ${reduceTip(s,d)}`}},
+  ()=>{let n=rnd(2,11),d=rnd(2,12);if(n===d)d++;const k=rnd(2,6);n*=k;d*=k;const g=gcd(n,d);return {text:`Сократи ${n}/${d}`,ans:N(n,d),steps:[`${n} и ${d} оба делятся на ${g}`,`${n} ÷ ${g} = ${n/g}, ${d} ÷ ${g} = ${d/g}`],h:`Раздели числитель и знаменатель на ${g}.`}},
+  ()=>{const d=rnd(3,9),n=rnd(1,d-1),m=rnd(1,d-1),s=n+m;return {text:`${n}/${d} + ${m}/${d} = ?`,ans:N(s,d),h:`Сложи числители: ${n} + ${m} = ${s}, знаменатель ${d}. ${reduceTip(s,d)}`}}
  ])();
  if(level===1)return pick([
-  ()=>{const d1=rnd(2,8),d2=rnd(2,8),n1=rnd(1,d1-1),n2=rnd(1,Math.max(1,d2-1));return {text:`${n1}/${d1} + ${n2}/${d2} = ?`,ans:N(n1*d2+n2*d1,d1*d2),h:'Приведи к общему знаменателю, сложи числители, сократи.'}},
-  ()=>{let d1=rnd(3,9),d2=rnd(2,8);if(d1===d2)d2++;let n1=rnd(2,d1),n2=rnd(1,d2-1);if(n1*d2<n2*d1){[n1,d1,n2,d2]=[n2,d2,n1,d1]}return {text:`${n1}/${d1} − ${n2}/${d2} = ?`,ans:N(n1*d2-n2*d1,d1*d2),h:'Общий знаменатель, затем вычти. Сократи, если получится.'}},
-  ()=>{const w=rnd(1,4),d=rnd(2,7),n=rnd(1,d-1),k=rnd(1,5);return {text:`${w} ${n}/${d} + ${k}/${d} = ?`,ans:N(w*d+n+k,d),h:`Смешанное число: ${w} = ${w*d}/${d}. Сложи с ${k}/${d}.`}},
-  ()=>{const d=rnd(2,6),n1=rnd(1,5),n2=rnd(1,5);return {text:`${n1}/${d} + ${n2} = ?`,ans:N(n1+n2*d,d),h:`Целое ${n2} = ${n2*d}/${d}. Сложи числители.`}}
+  ()=>{const d1=rnd(2,8),d2=rnd(2,8),n1=rnd(1,d1-1),n2=rnd(1,Math.max(1,d2-1)),num=n1*d2+n2*d1,den=d1*d2;return {text:`${n1}/${d1} + ${n2}/${d2} = ?`,ans:N(num,den),h:`Приведи к общему знаменателю ${den} и сложи числители. ${reduceTip(num,den)}`}},
+  ()=>{let d1=rnd(3,9),d2=rnd(2,8);if(d1===d2)d2++;let n1=rnd(2,d1),n2=rnd(1,d2-1);if(n1*d2<n2*d1){[n1,d1,n2,d2]=[n2,d2,n1,d1]}const num=n1*d2-n2*d1,den=d1*d2;return {text:`${n1}/${d1} − ${n2}/${d2} = ?`,ans:N(num,den),h:`Общий знаменатель ${den}, затем вычти. ${reduceTip(num,den)}`}},
+  ()=>{const w=rnd(1,4),d=rnd(2,7),n=rnd(1,d-1),k=rnd(1,5),num=w*d+n+k;return {text:`${w} ${n}/${d} + ${k}/${d} = ?`,ans:N(num,d),h:`Смешанное число: ${w} = ${w*d}/${d}. Сложи числители: ${w*d+n} + ${k} = ${num}. ${reduceTip(num,d)}`}},
+  ()=>{const d=rnd(2,6),n1=rnd(1,5),n2=rnd(1,5),num=n1+n2*d;return {text:`${n1}/${d} + ${n2} = ?`,ans:N(num,d),h:`Целое ${n2} = ${n2*d}/${d}. Сложи числители: ${n1} + ${n2*d} = ${num}. ${reduceTip(num,d)}`}}
  ])();
  return pick([
-  ()=>{const a=rnd(1,6),b=rnd(2,8),c=rnd(1,6),d=rnd(2,8);return {text:`${a}/${b} × ${c}/${d} = ?`,ans:N(a*c,b*d),h:'Умножь числитель на числитель, знаменатель на знаменатель. Сократи.'}},
-  ()=>{const a=rnd(1,6),b=rnd(2,8),c=rnd(1,6),d=rnd(2,8);return {text:`${a}/${b} ÷ ${c}/${d} = ?`,ans:N(a*d,b*c),h:'Деление дробей: умножь на перевёрнутую вторую дробь.'}},
-  ()=>{const a=rnd(1,5),b=rnd(2,7),c=rnd(1,5),d=rnd(2,7),e=rnd(1,4),f=rnd(2,6);return {text:`${a}/${b} × ${c}/${d} + ${e}/${f} = ?`,ans:N(a*c*f+e*b*d,b*d*f),h:'Сначала умножение дробей, затем сложение с общим знаменателем.'}},
-  ()=>{const w1=rnd(1,3),d1=rnd(2,6),n1=rnd(1,d1-1),w2=rnd(1,3),d2=rnd(2,6),n2=rnd(1,d2-1);return {text:`${w1} ${n1}/${d1} + ${w2} ${n2}/${d2} = ?`,ans:N((w1*d1+n1)*d2+(w2*d2+n2)*d1,d1*d2),h:'Переведи смешанные числа в неправильные дроби и сложи.'}},
-  ()=>{const a=rnd(2,5),b=rnd(2,7),c=rnd(1,4);return {text:`${a}/${b} × ${c} = ?`,ans:N(a*c,b),h:`${c} = ${c}/1. Умножь дроби и сократи.`}}
+  ()=>{const a=rnd(1,6),b=rnd(2,8),c=rnd(1,6),d=rnd(2,8),num=a*c,den=b*d;return {text:`${a}/${b} × ${c}/${d} = ?`,ans:N(num,den),h:`Умножь числители и знаменатели: ${num}/${den}. ${reduceTip(num,den)}`}},
+  ()=>{const a=rnd(1,6),b=rnd(2,8),c=rnd(1,6),d=rnd(2,8),num=a*d,den=b*c;return {text:`${a}/${b} ÷ ${c}/${d} = ?`,ans:N(num,den),h:`Деление: умножь на перевёрнутую вторую дробь, получится ${num}/${den}. ${reduceTip(num,den)}`}},
+  ()=>{const a=rnd(1,5),b=rnd(2,7),c=rnd(1,5),d=rnd(2,7),e=rnd(1,4),f=rnd(2,6),num=a*c*f+e*b*d,den=b*d*f;return {text:`${a}/${b} × ${c}/${d} + ${e}/${f} = ?`,ans:N(num,den),h:`Сначала умножение, затем сложение с общим знаменателем. ${reduceTip(num,den)}`}},
+  ()=>{const w1=rnd(1,3),d1=rnd(2,6),n1=rnd(1,d1-1),w2=rnd(1,3),d2=rnd(2,6),n2=rnd(1,d2-1),num=(w1*d1+n1)*d2+(w2*d2+n2)*d1,den=d1*d2;return {text:`${w1} ${n1}/${d1} + ${w2} ${n2}/${d2} = ?`,ans:N(num,den),h:`Переведи смешанные числа в неправильные дроби и сложи. ${reduceTip(num,den)}`}},
+  ()=>{const a=rnd(2,5),b=rnd(2,7),c=rnd(1,4),num=a*c;return {text:`${a}/${b} × ${c} = ?`,ans:N(num,b),h:`${c} = ${c}/1. Умножь: ${num}/${b}. ${reduceTip(num,b)}`}}
  ])();
 }
 
