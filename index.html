@@ -91,8 +91,8 @@ const topics=[
 ['Старт','подстановка'],['Уверенно','сложение'],['PRO','смешанные']]},
 {id:'percents',icon:'%',title:'Проценты',desc:'Процент от числа, сколько процентов, прибавить и убавить.',levels:[
 ['Старт','процент от числа'],['Уверенно','сколько процентов'],['PRO','увеличить и уменьшить']]},
-{id:'powers',icon:'aⁿ',title:'Степени',desc:'Считаем степени и простые свойства.',levels:[
-['Старт','возведение в степень'],['Уверенно','умножение степеней'],['PRO','смешанные']]},
+{id:'powers',icon:'aⁿ',title:'Степени',desc:'Считаем степени, подставляем буквы и простые свойства.',levels:[
+['Старт','числа и подстановка'],['Уверенно','умножение степеней'],['PRO','смешанные и буквы']]},
 {id:'modulus',icon:'|x|',title:'Модуль',desc:'Считаем модуль и решаем простые уравнения.',levels:[
 ['Старт','найти модуль'],['Уверенно','|x| = a'],['PRO','|x − a| = b']]},
 {id:'line',icon:'—',title:'Координатная прямая',desc:'Точки, расстояние и середина отрезка.',levels:[
@@ -500,15 +500,26 @@ function qPercent(level){
 }
 function qPowers(level){
  if(level===0){
-  const a=rnd(2,6),n=a===2?rnd(2,6):rnd(2,4);
-  return {html:`${a}<sup>${n}</sup> = ?`,text:`${a}^${n} = ?`,ans:N(a**n),steps:[`${a} умножь на себя ${n} раз`,`Получится ${a**n}`],h:`${a}^${n} = ${a**n}`};
+  return pick([
+   ()=>{const a=rnd(2,6),n=a===2?rnd(2,6):rnd(2,4);return {html:`${a}<sup>${n}</sup> = ?`,text:`${a}^${n} = ?`,ans:N(a**n),steps:[`${a} умножь на себя ${n} раз`,`Получится ${a**n}`],h:`${a}^${n} = ${a**n}`}},
+   ()=>{const a=rnd(2,6),n=a===2?rnd(2,5):rnd(2,4),v=pick(['a','x','b']);return {word:true,html:`Найди значение ${v}<sup>${n}</sup>, если ${v} = ${a}`,text:`Найди значение ${v}^${n}, если ${v} = ${a}`,ans:N(a**n),steps:[`Подставь ${v} = ${a}`,`${a}^${n} = ${a**n}`],h:`${a}^${n} = ${a**n}`}},
+   ()=>{const base=rnd(2,5),n=base===2?rnd(2,6):rnd(2,4),v=pick(['n','k','m']);return {word:true,html:`Найди значение ${base}<sup>${v}</sup>, если ${v} = ${n}`,text:`Найди значение ${base}^${v}, если ${v} = ${n}`,ans:N(base**n),steps:[`Подставь ${v} = ${n}`,`${base}^${n} = ${base**n}`],h:`${base}^${n} = ${base**n}`}},
+   ()=>{const a=rnd(2,5),n=rnd(2,4);return {word:true,html:`Вычисли a<sup>n</sup>, если a = ${a}, n = ${n}`,text:`Вычисли a^n, если a = ${a}, n = ${n}`,ans:N(a**n),steps:[`Подставь: ${a}^${n}`,`${a}^${n} = ${a**n}`],h:`${a}^${n} = ${a**n}`}}
+  ])();
  }
  if(level===1){
-  const a=rnd(2,5),n=rnd(2,4),m=rnd(2,4);
-  return {html:`${a}<sup>${n}</sup> × ${a}<sup>${m}</sup> = ?`,text:`${a}^${n} × ${a}^${m} = ?`,ans:N(a**(n+m)),steps:[`Основания одинаковые — сложи показатели: ${n} + ${m} = ${n+m}`,`${a}^${n+m} = ${a**(n+m)}`],h:`${a}^${n+m} = ${a**(n+m)}`};
+  return pick([
+   ()=>{const a=rnd(2,5),n=rnd(2,4),m=rnd(2,4);return {html:`${a}<sup>${n}</sup> × ${a}<sup>${m}</sup> = ?`,text:`${a}^${n} × ${a}^${m} = ?`,ans:N(a**(n+m)),steps:[`Основания одинаковые — сложи показатели: ${n} + ${m} = ${n+m}`,`${a}^${n+m} = ${a**(n+m)}`],h:`${a}^${n+m} = ${a**(n+m)}`}},
+   ()=>{const a=rnd(2,4),n=rnd(2,3),m=rnd(2,3);return {word:true,html:`Найди a<sup>n</sup> × a<sup>m</sup>, если a = ${a}, n = ${n}, m = ${m}`,text:`Найди a^n × a^m, если a = ${a}, n = ${n}, m = ${m}`,ans:N(a**(n+m)),steps:[`Сложи показатели: ${n} + ${m} = ${n+m}`,`${a}^${n+m} = ${a**(n+m)}`],h:`${a}^${n+m} = ${a**(n+m)}`}},
+   ()=>{const base=rnd(2,4),n=rnd(2,3),m=rnd(2,3);return {word:true,html:`Вычисли ${base}<sup>n</sup> × ${base}<sup>m</sup>, если n = ${n}, m = ${m}`,text:`Вычисли ${base}^n × ${base}^m, если n = ${n}, m = ${m}`,ans:N(base**(n+m)),steps:[`n + m = ${n+m}`,`${base}^${n+m} = ${base**(n+m)}`],h:`${base}^${n+m} = ${base**(n+m)}`}}
+  ])();
  }
- const a=rnd(2,4),n=rnd(2,3),b=rnd(2,4),m=b===a?rnd(2,3):rnd(2,3);
- return {html:`${a}<sup>${n}</sup> × ${b}<sup>${m}</sup> = ?`,text:`${a}^${n} × ${b}^${m} = ?`,ans:N((a**n)*(b**m)),steps:[`${a}^${n} = ${a**n}, ${b}^${m} = ${b**m}`,`${a**n} × ${b**m} = ${(a**n)*(b**m)}`],h:`Ответ ${(a**n)*(b**m)}`};
+ return pick([
+  ()=>{const a=rnd(2,4),n=rnd(2,3),b=rnd(2,4),m=rnd(2,3);return {html:`${a}<sup>${n}</sup> × ${b}<sup>${m}</sup> = ?`,text:`${a}^${n} × ${b}^${m} = ?`,ans:N((a**n)*(b**m)),steps:[`${a}^${n} = ${a**n}, ${b}^${m} = ${b**m}`,`${a**n} × ${b**m} = ${(a**n)*(b**m)}`],h:`Ответ ${(a**n)*(b**m)}`}},
+  ()=>{const n=rnd(2,5);return {word:true,html:`Найди 2<sup>n+1</sup>, если n = ${n}`,text:`Найди 2^{n+1}, если n = ${n}`,ans:N(2**(n+1)),steps:[`Показатель: ${n} + 1 = ${n+1}`,`2^${n+1} = ${2**(n+1)}`],h:`2^${n+1} = ${2**(n+1)}`}},
+  ()=>{const a=rnd(2,5),n=rnd(2,3);return {word:true,html:`Вычисли a<sup>n</sup> × a, если a = ${a}, n = ${n}`,text:`Вычисли a^n × a, если a = ${a}, n = ${n}`,ans:N(a**(n+1)),steps:[`a^n × a = a^{n+1}`,`${a}^${n+1} = ${a**(n+1)}`],h:`${a}^${n+1} = ${a**(n+1)}`}},
+  ()=>{const a=rnd(2,4),b=rnd(2,4);return {word:true,html:`Найди a<sup>2</sup> × b<sup>2</sup>, если a = ${a}, b = ${b}`,text:`Найди a^2 × b^2, если a = ${a}, b = ${b}`,ans:N(a*a*b*b),steps:[`${a}² = ${a*a}, ${b}² = ${b*b}`,`${a*a} × ${b*b} = ${a*a*b*b}`],h:`${a*a*b*b}`}}
+ ])();
 }
 function qModulus(level){
  if(level===0){
@@ -550,7 +561,7 @@ function qWords(level){
 }
 function qQuad(level){
  if(level===0){
-  const a=rnd(2,9);
+  const a=rnd(1,10);
   return {text:`x² = ${a*a}`,ans:{kind:'set',vals:[N(a),N(-a)]},steps:[`Извлеки корень: x = ±${a}`,`Два корня: ${a} и −${a}`],h:`x = ±${a}`};
  }
  if(level===1){
@@ -560,6 +571,18 @@ function qQuad(level){
  }
  const k=rnd(2,7),a=pick([1,2,3]);
  return {text:`${a===1?'':a}x² − ${a*k*k} = 0`,ans:{kind:'set',vals:[N(k),N(-k)]},steps:[`Перенеси число: ${a===1?'':a}x² = ${a*k*k}`,`x² = ${k*k}, x = ±${k}`],h:`x = ±${k}`};
+}
+function qKey(q){
+ if(q.lines)return 'L:'+q.lines.join('|');
+ if(q.html)return 'H:'+q.html;
+ return 'T:'+(q.text||'');
+}
+function uniqueQ(topic,level){
+ const seen=state.seen||(state.seen=[]);
+ let q,key,i=0;
+ do{q=makeQ(topic,level);key=qKey(q);i++}while(seen.indexOf(key)!==-1 && i<50);
+ seen.push(key);
+ return q;
 }
 function makeQ(topic,level){
  if(topic==='multiply')return qMultiply();
@@ -587,7 +610,7 @@ function uiFor(topic){
  if(topic==='linear')return {caption:'реши уравнение',format:'Если ответ дробный, пиши 5/2 или −3/4',placeholder:'число или дробь',keys:'frac'};
  if(topic==='multiply')return {caption:'реши пример',format:state.mulOp==='div'?'Это деление из таблицы умножения':'',placeholder:'ответ',keys:'num'};
  if(topic==='percents')return {caption:'реши задачу',format:'Можно писать дробь, если не целое',placeholder:'ответ',keys:'num'};
- if(topic==='powers')return {caption:'посчитай степень',format:'',placeholder:'ответ',keys:'num'};
+ if(topic==='powers')return {caption:'посчитай степень',format:'Если есть буквы — сначала подставь числа',placeholder:'ответ',keys:'num'};
  if(topic==='modulus')return {caption:'реши',format:'Если корней два, пиши оба: 3 и −3 или ±3',placeholder:'±3  или  3 и −3',keys:'set'};
  if(topic==='line')return {caption:'посмотри на прямую',format:'',placeholder:'ответ',keys:'num'};
  if(topic==='words')return {caption:'реши задачу',format:'',placeholder:'ответ',keys:'num'};
@@ -647,7 +670,7 @@ function selectTopic(id){
 }
 function setMulTable(v){mulTable=v;selectTopic('multiply')}
 function setMulOp(v){mulOp=v;selectTopic('multiply')}
-function startGame(level){state={topic:selected,level,q:0,correct:0,points:0,streak:0,best:0,answered:false,current:null,mulTable,mulOp,total:10};document.getElementById('home').style.display='none';document.getElementById('result').style.display='none';document.getElementById('trainer').style.display='block';load()}
+function startGame(level){state={topic:selected,level,q:0,correct:0,points:0,streak:0,best:0,answered:false,current:null,mulTable,mulOp,total:10,seen:[]};document.getElementById('home').style.display='none';document.getElementById('result').style.display='none';document.getElementById('trainer').style.display='block';load()}
 function startMistakes(){
  if(!mistakes.length)return;
  const queue=shuffle(mistakes).slice(0,10);
@@ -667,7 +690,7 @@ function load(){
   state.current=state.queue[state.q];
   if(state.current)state.current.srcTopic=state.current.srcTopic||state.current.topic;
  }else{
-  state.current=makeQ(state.topic,state.level);
+  state.current=uniqueQ(state.topic,state.level);
   if(!state.current.steps||!state.current.steps.length)state.current.steps=state.current.h?[state.current.h]:[];
   if(state.topic==='inequalities' && state.current.steps.length===1){
    const ih=intervalH(), s=state.current.steps[0];
