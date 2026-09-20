@@ -105,7 +105,7 @@ const topics=[
 let selected='multiply',state={},unlocked=JSON.parse(localStorage.getItem('sm_unlocked')||'{}');
 let mulTable='all',mulOp='mul';
 let mistakes=JSON.parse(localStorage.getItem('sm_mistakes')||'[]');
-let lastInput=null,shareUrl='';
+let lastInput=null,shareUrl='',nextTimer=null;
 
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function pick(arr){return arr[rnd(0,arr.length-1)]}
@@ -285,10 +285,11 @@ function buildMulQueue(){
  const op=mulOp;
  const bases=table==='all'?[2,3,4,5,6,7,8,9]:[+table];
  const times=[1,2,3,4,5,6,7,8,9,10];
- const qs=[];
+ const qs=[], seen={};
+ const add=q=>{if(seen[q.text])return;seen[q.text]=1;qs.push(q)};
  bases.forEach(a=>times.forEach(b=>{
-  if(op!=='div')qs.push(mulItem(a,b));
-  if(op==='div'||op==='both')qs.push(divItem(a,b));
+  if(op!=='div'){add(mulItem(a,b));add(mulItem(b,a))}
+  if(op==='div'||op==='both'){add(divItem(a,b));if(a!==b)add(divItem(b,a))}
  }));
  return shuffle(qs);
 }
@@ -509,23 +510,20 @@ function qPowers(level){
  if(level===0){
   return pick([
    ()=>{const a=rnd(2,6),n=a===2?rnd(2,6):rnd(2,4);return {html:`${a}<sup>${n}</sup> = ?`,text:`${a}^${n} = ?`,ans:N(a**n),steps:[`${a} умножь на себя ${n} раз`,`Получится ${a**n}`],h:`${a}^${n} = ${a**n}`}},
-   ()=>{const a=rnd(2,6),n=a===2?rnd(2,5):rnd(2,4),v=pick(['a','x','b']);return {word:true,html:`Найди значение ${v}<sup>${n}</sup>, если ${v} = ${a}`,text:`Найди значение ${v}^${n}, если ${v} = ${a}`,ans:N(a**n),steps:[`Подставь ${v} = ${a}`,`${a}^${n} = ${a**n}`],h:`${a}^${n} = ${a**n}`}},
-   ()=>{const base=rnd(2,5),n=base===2?rnd(2,6):rnd(2,4),v=pick(['n','k','m']);return {word:true,html:`Найди значение ${base}<sup>${v}</sup>, если ${v} = ${n}`,text:`Найди значение ${base}^${v}, если ${v} = ${n}`,ans:N(base**n),steps:[`Подставь ${v} = ${n}`,`${base}^${n} = ${base**n}`],h:`${base}^${n} = ${base**n}`}},
-   ()=>{const a=rnd(2,5),n=rnd(2,4);return {word:true,html:`Вычисли a<sup>n</sup>, если a = ${a}, n = ${n}`,text:`Вычисли a^n, если a = ${a}, n = ${n}`,ans:N(a**n),steps:[`Подставь: ${a}^${n}`,`${a}^${n} = ${a**n}`],h:`${a}^${n} = ${a**n}`}}
+   ()=>{const a=rnd(2,6),n=a===2?rnd(2,5):rnd(2,4),v=pick(['a','x','b','c']);return {word:true,html:`Найди значение ${v}<sup>${n}</sup>, если ${v} = ${a}`,text:`Найди значение ${v}^${n}, если ${v} = ${a}`,ans:N(a**n),steps:[`Подставь ${v} = ${a}`,`${a}^${n} = ${a**n}`],h:`${a}^${n} = ${a**n}`}},
+   ()=>{const a=rnd(2,5),n=rnd(2,4),v=pick(['a','x','k']);return {word:true,html:`Вычисли ${v}<sup>${n}</sup> при ${v} = ${a}`,text:`Вычисли ${v}^${n} при ${v} = ${a}`,ans:N(a**n),steps:[`${v} = ${a}, степень ${n} уже дана`,`${a}^${n} = ${a**n}`],h:`${a}^${n} = ${a**n}`}}
   ])();
  }
  if(level===1){
   return pick([
    ()=>{const a=rnd(2,5),n=rnd(2,4),m=rnd(2,4);return {html:`${a}<sup>${n}</sup> × ${a}<sup>${m}</sup> = ?`,text:`${a}^${n} × ${a}^${m} = ?`,ans:N(a**(n+m)),steps:[`Основания одинаковые — сложи показатели: ${n} + ${m} = ${n+m}`,`${a}^${n+m} = ${a**(n+m)}`],h:`${a}^${n+m} = ${a**(n+m)}`}},
-   ()=>{const a=rnd(2,4),n=rnd(2,3),m=rnd(2,3);return {word:true,html:`Найди a<sup>n</sup> × a<sup>m</sup>, если a = ${a}, n = ${n}, m = ${m}`,text:`Найди a^n × a^m, если a = ${a}, n = ${n}, m = ${m}`,ans:N(a**(n+m)),steps:[`Сложи показатели: ${n} + ${m} = ${n+m}`,`${a}^${n+m} = ${a**(n+m)}`],h:`${a}^${n+m} = ${a**(n+m)}`}},
-   ()=>{const base=rnd(2,4),n=rnd(2,3),m=rnd(2,3);return {word:true,html:`Вычисли ${base}<sup>n</sup> × ${base}<sup>m</sup>, если n = ${n}, m = ${m}`,text:`Вычисли ${base}^n × ${base}^m, если n = ${n}, m = ${m}`,ans:N(base**(n+m)),steps:[`n + m = ${n+m}`,`${base}^${n+m} = ${base**(n+m)}`],h:`${base}^${n+m} = ${base**(n+m)}`}}
+   ()=>{const a=rnd(2,4),n=rnd(2,3),m=rnd(2,3),v=pick(['a','x']);return {word:true,html:`Найди ${v}<sup>${n}</sup> × ${v}<sup>${m}</sup>, если ${v} = ${a}`,text:`Найди ${v}^${n} × ${v}^${m}, если ${v} = ${a}`,ans:N(a**(n+m)),steps:[`Подставь ${v} = ${a}`,`Сложи показатели: ${n} + ${m} = ${n+m}`,`${a}^${n+m} = ${a**(n+m)}`],h:`${a}^${n+m} = ${a**(n+m)}`}}
   ])();
  }
  return pick([
   ()=>{const a=rnd(2,4),n=rnd(2,3),b=rnd(2,4),m=rnd(2,3);return {html:`${a}<sup>${n}</sup> × ${b}<sup>${m}</sup> = ?`,text:`${a}^${n} × ${b}^${m} = ?`,ans:N((a**n)*(b**m)),steps:[`${a}^${n} = ${a**n}, ${b}^${m} = ${b**m}`,`${a**n} × ${b**m} = ${(a**n)*(b**m)}`],h:`Ответ ${(a**n)*(b**m)}`}},
-  ()=>{const n=rnd(2,5);return {word:true,html:`Найди 2<sup>n+1</sup>, если n = ${n}`,text:`Найди 2^{n+1}, если n = ${n}`,ans:N(2**(n+1)),steps:[`Показатель: ${n} + 1 = ${n+1}`,`2^${n+1} = ${2**(n+1)}`],h:`2^${n+1} = ${2**(n+1)}`}},
-  ()=>{const a=rnd(2,5),n=rnd(2,3);return {word:true,html:`Вычисли a<sup>n</sup> × a, если a = ${a}, n = ${n}`,text:`Вычисли a^n × a, если a = ${a}, n = ${n}`,ans:N(a**(n+1)),steps:[`a^n × a = a^{n+1}`,`${a}^${n+1} = ${a**(n+1)}`],h:`${a}^${n+1} = ${a**(n+1)}`}},
-  ()=>{const a=rnd(2,4),b=rnd(2,4);return {word:true,html:`Найди a<sup>2</sup> × b<sup>2</sup>, если a = ${a}, b = ${b}`,text:`Найди a^2 × b^2, если a = ${a}, b = ${b}`,ans:N(a*a*b*b),steps:[`${a}² = ${a*a}, ${b}² = ${b*b}`,`${a*a} × ${b*b} = ${a*a*b*b}`],h:`${a*a*b*b}`}}
+  ()=>{const a=rnd(2,4),b=rnd(2,4);return {word:true,html:`Найди a<sup>2</sup> × b<sup>2</sup>, если a = ${a}, b = ${b}`,text:`Найди a^2 × b^2, если a = ${a}, b = ${b}`,ans:N(a*a*b*b),steps:[`Подставь a = ${a}, b = ${b}`,`${a}² = ${a*a}, ${b}² = ${b*b}`,`${a*a} × ${b*b} = ${a*a*b*b}`],h:`${a*a*b*b}`}},
+  ()=>{const a=rnd(2,4),b=rnd(2,3),n=rnd(2,3),m=2,va=pick(['a','x']),vb=va==='a'?'b':'y';return {word:true,html:`Найди ${va}<sup>${n}</sup> × ${vb}<sup>${m}</sup>, если ${va} = ${a}, ${vb} = ${b}`,text:`Найди ${va}^${n} × ${vb}^${m}, если ${va} = ${a}, ${vb} = ${b}`,ans:N((a**n)*(b**m)),steps:[`Подставь ${va} = ${a}, ${vb} = ${b}`,`${a}^${n} = ${a**n}, ${b}^${m} = ${b**m}`,`${a**n} × ${b**m} = ${(a**n)*(b**m)}`],h:`${(a**n)*(b**m)}`}}
  ])();
 }
 function qModulus(level){
@@ -617,7 +615,7 @@ function uiFor(topic){
  if(topic==='linear')return {caption:'реши уравнение',format:'Если ответ дробный, пиши 5/2 или −3/4',placeholder:'число или дробь',keys:'frac'};
  if(topic==='multiply')return {caption:'реши пример',format:state.mulOp==='div'?'Это деление из таблицы умножения':'',placeholder:'ответ',keys:'num'};
  if(topic==='percents')return {caption:'реши задачу',format:'Можно писать дробь, если не целое',placeholder:'ответ',keys:'num'};
- if(topic==='powers')return {caption:'посчитай степень',format:'Если есть буквы — сначала подставь числа',placeholder:'ответ',keys:'num'};
+ if(topic==='powers')return {caption:'посчитай степень',format:'Буква стоит в основании. Степень уже дана — подставь число',placeholder:'ответ',keys:'num'};
  if(topic==='modulus')return {caption:'реши',format:'Если корней два, пиши оба: 3 и −3 или ±3',placeholder:'±3  или  3 и −3',keys:'set'};
  if(topic==='line')return {caption:'посмотри на прямую',format:'',placeholder:'ответ',keys:'num'};
  if(topic==='words')return {caption:'реши задачу',format:'',placeholder:'ответ',keys:'num'};
@@ -798,20 +796,27 @@ function check(){
  if(ok){
   state.correct++;state.streak++;state.best=Math.max(state.best,state.streak);state.points+=100+20*Math.max(0,state.streak-1);
   if(state.topic==='mistakes')forgetMistake(state.current);
-  f.className='feedback good';f.innerHTML=`<b>✓ ${praise()}</b><br>Ответ: ${ansPretty}`;
+  f.className='feedback good';f.innerHTML=`<b>✓ ${praise()}</b>`;
+  document.getElementById('answer').disabled=true;
+  document.getElementById('ansX').disabled=true;
+  document.getElementById('ansY').disabled=true;
+  document.getElementById('next').style.display='none';
+  stats();
+  clearTimeout(nextTimer);
+  nextTimer=setTimeout(next,1100);
  }else{
   state.streak=0;
   if(state.topic!=='mistakes')rememberMistake(state.current);
   const st=state.current.steps&&state.current.steps.length?state.current.steps:[state.current.h];
   f.className='feedback wrong';
   f.innerHTML=`<b>Почти! Сейчас разберёмся ♡</b><br>Правильный ответ: ${ansPretty}${stepsHTML(st)}`;
+  document.getElementById('answer').disabled=true;
+  document.getElementById('ansX').disabled=true;
+  document.getElementById('ansY').disabled=true;
+  document.getElementById('next').style.display='block';
+  stats();
+  f.scrollIntoView({behavior:'smooth',block:'nearest'});
  }
- document.getElementById('answer').disabled=true;
- document.getElementById('ansX').disabled=true;
- document.getElementById('ansY').disabled=true;
- document.getElementById('next').style.display='block';
- stats();
- f.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function showHint(){
  const f=document.getElementById('feedback');
@@ -820,13 +825,14 @@ function showHint(){
  f.innerHTML='💡 '+mathify(st[0]||'Подумай ещё чуть-чуть');
 }
 function stats(){document.getElementById('scorePill').textContent='♡ '+state.points;document.getElementById('streakPill').textContent='🔥 '+state.streak}
-function next(){state.q++;const total=state.total||10;if(state.q>=total)finish();else load()}
+function next(){clearTimeout(nextTimer);state.q++;const total=state.total||10;if(state.q>=total)finish();else load()}
 function topicLabel(){
  if(state.topic==='mistakes')return 'ошибки';
  if(state.topic==='multiply')return state.mulTable==='all'?'таблица умножения':'таблица на '+state.mulTable;
  const t=topics.find(x=>x.id===state.topic);return t?t.title:'sashosha math';
 }
 function finish(){
+ clearTimeout(nextTimer);
  document.getElementById('home').style.display='none';
  document.getElementById('trainer').style.display='none';
  document.getElementById('result').style.display='block';
@@ -885,7 +891,7 @@ function shareTelegram(){
  window.open('https://t.me/share/url?url='+encodeURIComponent('https://t.me/sashoshamath')+'&text='+encodeURIComponent(text),'_blank','noopener');
 }
 function restart(){if(state.topic==='mistakes')startMistakes();else startGame(state.level)}
-function goHome(){document.getElementById('trainer').style.display='none';document.getElementById('result').style.display='none';document.getElementById('home').style.display='block';showTopics()}
+function goHome(){clearTimeout(nextTimer);document.getElementById('trainer').style.display='none';document.getElementById('result').style.display='none';document.getElementById('home').style.display='block';showTopics()}
 function onEnter(e){if(e.key==='Enter')check()}
 ['answer','ansX','ansY'].forEach(id=>{
  const el=document.getElementById(id);
