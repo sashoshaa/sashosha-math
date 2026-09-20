@@ -2,7 +2,7 @@ import html
 import os
 import telebot
 from dotenv import load_dotenv
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, MenuButtonWebApp
 
 load_dotenv()
 
@@ -49,9 +49,9 @@ def subscribe_keyboard():
     return kb
 
 
-def link_keyboard():
+def trainer_keyboard():
     kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton('открыть тренажёр 🩰', url=SITE))
+    kb.add(InlineKeyboardButton('открыть тренажёр 🩰', web_app=WebAppInfo(url=SITE)))
     return kb
 
 
@@ -78,7 +78,7 @@ def send_gate(chat_id, user=None):
     )
 
 
-def send_link(chat_id, user):
+def send_trainer(chat_id, user):
     if not is_subscribed(getattr(user, 'id', None)):
         send_gate(chat_id, user)
         return
@@ -87,11 +87,17 @@ def send_link(chat_id, user):
     bot.send_message(
         chat_id,
         f'{hello}\n\n'
-        'Вот ссылка на тренажёр — выбирай тему и решай в своём темпе:\n'
-        f'<a href="{SITE}">sashosha math</a>',
-        reply_markup=link_keyboard(),
+        'Тренажёр внутри бота — нажми кнопку ниже.',
+        reply_markup=trainer_keyboard(),
         disable_web_page_preview=True,
     )
+    try:
+        bot.set_chat_menu_button(
+            chat_id,
+            MenuButtonWebApp(text='тренажёр', web_app=WebAppInfo(url=SITE)),
+        )
+    except Exception:
+        pass
 
 
 @bot.message_handler(commands=['start'])
@@ -113,7 +119,7 @@ def on_check(call):
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
         except Exception:
             pass
-        send_link(call.message.chat.id, call.from_user)
+        send_trainer(call.message.chat.id, call.from_user)
     else:
         bot.answer_callback_query(call.id, 'пока не вижу подписку', show_alert=True)
         send_gate(call.message.chat.id, call.from_user)
