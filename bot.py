@@ -2,13 +2,19 @@ import html
 import os
 import telebot
 from dotenv import load_dotenv
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, MenuButtonWebApp
+from telebot.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
 
 load_dotenv()
 
 TOKEN = os.getenv('BOT_TOKEN', '').strip()
 CHANNEL = os.getenv('CHANNEL', '@sashoshamath').strip()
 SITE = os.getenv('SITE_URL', 'https://sashoshaa.github.io/sashosha-math/').strip()
+ACTIVATE_TEXT = 'Забрать тренажёр 🩰'
 
 if not TOKEN:
     raise SystemExit('Нет BOT_TOKEN. Скопируй .env.example в .env и вставь токен от @BotFather.')
@@ -36,9 +42,9 @@ def is_subscribed(user_id):
     return member.status == 'restricted' and bool(getattr(member, 'is_member', False))
 
 
-def start_keyboard():
-    kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton('забрать тренажёр 🩰', callback_data='activate'))
+def bottom_keyboard():
+    kb = ReplyKeyboardMarkup(resize_keyboard=True, is_persistent=True)
+    kb.add(KeyboardButton(ACTIVATE_TEXT))
     return kb
 
 
@@ -49,9 +55,9 @@ def subscribe_keyboard():
     return kb
 
 
-def trainer_keyboard():
+def link_keyboard():
     kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton('открыть тренажёр 🩰', web_app=WebAppInfo(url=SITE)))
+    kb.add(InlineKeyboardButton('открыть тренажёр 🩰', url=SITE))
     return kb
 
 
@@ -62,8 +68,9 @@ def send_welcome(chat_id, user=None):
         chat_id,
         f'{hello}\n\n'
         'В моём канале много полезного — лайфхаки, шпаргалки, разборы и мотивация 🎀\n'
-        'Хочешь забрать сайт-тренажер по математике? 🩰',
-        reply_markup=start_keyboard(),
+        'Хочешь забрать сайт-тренажер по математике? 🩰\n\n'
+        'Нажми кнопку внизу — писать ничего не нужно.',
+        reply_markup=bottom_keyboard(),
         disable_web_page_preview=True,
     )
 
@@ -78,7 +85,7 @@ def send_gate(chat_id, user=None):
     )
 
 
-def send_trainer(chat_id, user):
+def send_link(chat_id, user):
     if not is_subscribed(getattr(user, 'id', None)):
         send_gate(chat_id, user)
         return
@@ -87,17 +94,11 @@ def send_trainer(chat_id, user):
     bot.send_message(
         chat_id,
         f'{hello}\n\n'
-        'Тренажёр внутри бота — нажми кнопку ниже.',
-        reply_markup=trainer_keyboard(),
+        'Вот ссылка на тренажёр:\n'
+        f'<a href="{SITE}">sashosha math</a>',
+        reply_markup=link_keyboard(),
         disable_web_page_preview=True,
     )
-    try:
-        bot.set_chat_menu_button(
-            chat_id,
-            MenuButtonWebApp(text='тренажёр', web_app=WebAppInfo(url=SITE)),
-        )
-    except Exception:
-        pass
 
 
 @bot.message_handler(commands=['start'])
@@ -105,10 +106,9 @@ def on_start(message):
     send_welcome(message.chat.id, message.from_user)
 
 
-@bot.callback_query_handler(func=lambda c: c.data == 'activate')
-def on_activate(call):
-    bot.answer_callback_query(call.id)
-    send_gate(call.message.chat.id, call.from_user)
+@bot.message_handler(func=lambda m: (m.text or '').strip() == ACTIVATE_TEXT)
+def on_activate_button(message):
+    send_gate(message.chat.id, message.from_user)
 
 
 @bot.callback_query_handler(func=lambda c: c.data == 'check')
@@ -119,7 +119,7 @@ def on_check(call):
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
         except Exception:
             pass
-        send_trainer(call.message.chat.id, call.from_user)
+        send_link(call.message.chat.id, call.from_user)
     else:
         bot.answer_callback_query(call.id, 'пока не вижу подписку', show_alert=True)
         send_gate(call.message.chat.id, call.from_user)
