@@ -1,17 +1,9 @@
 # Sashosha Math
 
-Статический сайт-тренажёр, готовый для GitHub Pages.
+Математический тренажёр: [sashoshaa.github.io/sashosha-math](https://sashoshaa.github.io/sashosha-math/)
 
-Темы в первой версии:
-- таблица умножения;
-- линейные уравнения;
-- арифметика;
-- дроби;
-- неравенства;
-- системы уравнений.
+Telegram: [@sashoshamath](https://t.me/sashoshamath)
+
+Темы: таблица умножения, уравнения, арифметика, дроби, неравенства, системы, проценты, степени, модуль, координатная прямая, текстовые задачи, квадратные уравнения.
 
 У каждой темы есть уровни сложности. Пройденный уровень открывает следующий.
-
-## Публикация
-Загрузите `index.html` в публичный GitHub-репозиторий и включите GitHub Pages:
-Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save.
