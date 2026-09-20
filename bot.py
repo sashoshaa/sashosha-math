@@ -9,8 +9,6 @@ load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN', '').strip()
 CHANNEL = os.getenv('CHANNEL', '@sashoshamath').strip()
 SITE = os.getenv('SITE_URL', 'https://sashoshaa.github.io/sashosha-math/').strip()
-HERE = os.path.dirname(os.path.abspath(__file__))
-TRAINER_FILE = os.path.join(HERE, 'index.html')
 
 if not TOKEN:
     raise SystemExit('Нет BOT_TOKEN. Скопируй .env.example в .env и вставь токен от @BotFather.')
@@ -38,6 +36,12 @@ def is_subscribed(user_id):
     return member.status == 'restricted' and bool(getattr(member, 'is_member', False))
 
 
+def start_keyboard():
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton('забрать тренажёр 🩰', callback_data='activate'))
+    return kb
+
+
 def subscribe_keyboard():
     kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton('подписаться на канал 🎀', url=CHANNEL_LINK))
@@ -45,20 +49,28 @@ def subscribe_keyboard():
     return kb
 
 
-def file_keyboard():
+def link_keyboard():
     kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton('получить файл 🩰', callback_data='getfile'))
+    kb.add(InlineKeyboardButton('открыть тренажёр 🩰', url=SITE))
     return kb
 
 
-def send_gate(chat_id, user=None):
+def send_welcome(chat_id, user=None):
     name = first_name(user)
     hello = f'Привет, {name} 🤍' if name else 'Привет 🤍'
     bot.send_message(
         chat_id,
         f'{hello}\n\n'
         'В моём канале много полезного — лайфхаки, шпаргалки, разборы и мотивация 🎀\n'
-        'Хочешь забрать сайт-тренажер по математике? 🩰\n\n'
+        'Хочешь забрать сайт-тренажер по математике? 🩰',
+        reply_markup=start_keyboard(),
+        disable_web_page_preview=True,
+    )
+
+
+def send_gate(chat_id, user=None):
+    bot.send_message(
+        chat_id,
         f'Подпишись на {CHANNEL} и нажми «я уже подписан(а)».\n'
         'Проверю подписку и только потом открою тренажёр!!',
         reply_markup=subscribe_keyboard(),
@@ -66,7 +78,7 @@ def send_gate(chat_id, user=None):
     )
 
 
-def send_unlocked(chat_id, user):
+def send_link(chat_id, user):
     if not is_subscribed(getattr(user, 'id', None)):
         send_gate(chat_id, user)
         return
@@ -75,40 +87,22 @@ def send_unlocked(chat_id, user):
     bot.send_message(
         chat_id,
         f'{hello}\n\n'
-        'Нажми «получить файл» — пришлю тренажёр.',
-        reply_markup=file_keyboard(),
+        'Вот ссылка на тренажёр — выбирай тему и решай в своём темпе:\n'
+        f'<a href="{SITE}">sashosha math</a>',
+        reply_markup=link_keyboard(),
+        disable_web_page_preview=True,
     )
-
-
-def send_trainer_file(chat_id, user):
-    if not is_subscribed(getattr(user, 'id', None)):
-        send_gate(chat_id, user)
-        return
-    name = first_name(user)
-    caption = (
-        f'{name}, вот файл тренажёра 🩰🤍\n'
-        'Открой его в браузере и решай в своём темпе.'
-        if name else
-        'Вот файл тренажёра 🩰🤍\n'
-        'Открой его в браузере и решай в своём темпе.'
-    )
-    with open(TRAINER_FILE, 'rb') as f:
-        bot.send_document(
-            chat_id,
-            f,
-            visible_file_name='sashosha-math.html',
-            caption=caption,
-        )
 
 
 @bot.message_handler(commands=['start'])
 def on_start(message):
-    send_gate(message.chat.id, message.from_user)
+    send_welcome(message.chat.id, message.from_user)
 
 
-@bot.message_handler(commands=['site'])
-def on_site(message):
-    send_unlocked(message.chat.id, message.from_user)
+@bot.callback_query_handler(func=lambda c: c.data == 'activate')
+def on_activate(call):
+    bot.answer_callback_query(call.id)
+    send_gate(call.message.chat.id, call.from_user)
 
 
 @bot.callback_query_handler(func=lambda c: c.data == 'check')
@@ -119,17 +113,7 @@ def on_check(call):
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
         except Exception:
             pass
-        send_unlocked(call.message.chat.id, call.from_user)
-    else:
-        bot.answer_callback_query(call.id, 'пока не вижу подписку', show_alert=True)
-        send_gate(call.message.chat.id, call.from_user)
-
-
-@bot.callback_query_handler(func=lambda c: c.data == 'getfile')
-def on_getfile(call):
-    if is_subscribed(call.from_user.id):
-        bot.answer_callback_query(call.id, 'отправляю файл 🩰')
-        send_trainer_file(call.message.chat.id, call.from_user)
+        send_link(call.message.chat.id, call.from_user)
     else:
         bot.answer_callback_query(call.id, 'пока не вижу подписку', show_alert=True)
         send_gate(call.message.chat.id, call.from_user)
@@ -137,7 +121,7 @@ def on_getfile(call):
 
 @bot.message_handler(func=lambda m: True)
 def on_any(message):
-    send_gate(message.chat.id, message.from_user)
+    send_welcome(message.chat.id, message.from_user)
 
 
 def webhook_base():
