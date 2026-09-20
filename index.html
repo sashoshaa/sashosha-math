@@ -114,8 +114,15 @@ function pick(arr){return arr[rnd(0,arr.length-1)]}
 function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t}return a||1}
 function reduceTip(n,d){
  const g=gcd(n,d);
- if(g<=1) return 'Сокращать не нужно — дробь уже несократима.';
- return `Сократи на ${g}: раздели числитель и знаменатель на ${g}.`;
+ if(g<=1) return `Сокращать не нужно: у ${n} и ${d} нет общего делителя больше 1.`;
+ return `Сократи ${n}/${d} на ${g}: раздели числитель и знаменатель на ${g}.`;
+}
+function reduceSteps(n,d){
+ const g=gcd(n,d);
+ if(g<=1) return [`Сокращать не нужно: у ${n} и ${d} нет общего делителя больше 1.`];
+ const nn=n/g,dd=d/g;
+ const after=dd===1?String(nn):`${nn}/${dd}`;
+ return [`${n} и ${d} оба делятся на ${g}`,`${n} ÷ ${g} = ${nn}, ${d} ÷ ${g} = ${dd}`,`После сокращения: ${after}`];
 }
 function simp(n,d){if(d<0){n=-n;d=-d}const g=gcd(n,d);return {kind:'num',n:n/g,d:d/g}}
 function N(n,d){return simp(n,d==null?1:d)}
@@ -378,23 +385,23 @@ function qArithmetic(level){
 
 function qFraction(level){
  if(level===0)return pick([
-  ()=>{const d=rnd(2,9),n=rnd(1,d-1),s=2*n;return {text:`${n}/${d} + ${n}/${d} = ?`,ans:N(s,d),h:`Знаменатель тот же — сложи числители: ${n} + ${n} = ${s}. ${reduceTip(s,d)}`}},
-  ()=>{const d=rnd(3,10),n=rnd(2,d-1),m=rnd(1,n-1),s=n-m;return {text:`${n}/${d} − ${m}/${d} = ?`,ans:N(s,d),h:`Знаменатели одинаковые — вычти числители: ${n} − ${m} = ${s}. ${reduceTip(s,d)}`}},
-  ()=>{let n=rnd(2,11),d=rnd(2,12);if(n===d)d++;const k=rnd(2,6);n*=k;d*=k;const g=gcd(n,d);return {text:`Сократи ${n}/${d}`,ans:N(n,d),steps:[`${n} и ${d} оба делятся на ${g}`,`${n} ÷ ${g} = ${n/g}, ${d} ÷ ${g} = ${d/g}`],h:`Раздели числитель и знаменатель на ${g}.`}},
-  ()=>{const d=rnd(3,9),n=rnd(1,d-1),m=rnd(1,d-1),s=n+m;return {text:`${n}/${d} + ${m}/${d} = ?`,ans:N(s,d),h:`Сложи числители: ${n} + ${m} = ${s}, знаменатель ${d}. ${reduceTip(s,d)}`}}
+  ()=>{const d=rnd(2,9),n=rnd(1,d-1),s=2*n;return {text:`${n}/${d} + ${n}/${d} = ?`,ans:N(s,d),h:`Знаменатели одинаковые — сложи числители: ${n} + ${n} = ${s}.`,steps:[`В примере ${n}/${d} + ${n}/${d} знаменатели одинаковые`,`Сложи числители: ${n} + ${n} = ${s}. Получится ${s}/${d}`,...reduceSteps(s,d)]}},
+  ()=>{const d=rnd(3,10),n=rnd(2,d-1),m=rnd(1,n-1),s=n-m;return {text:`${n}/${d} − ${m}/${d} = ?`,ans:N(s,d),h:`Знаменатели одинаковые — вычти числители: ${n} − ${m} = ${s}.`,steps:[`В примере ${n}/${d} − ${m}/${d} знаменатели одинаковые`,`Вычти числители: ${n} − ${m} = ${s}. Получится ${s}/${d}`,...reduceSteps(s,d)]}},
+  ()=>{let n=rnd(2,11),d=rnd(2,12);if(n===d)d++;const k=rnd(2,6);n*=k;d*=k;const g=gcd(n,d);return {text:`Сократи ${n}/${d}`,ans:N(n,d),h:`Раздели числитель и знаменатель ${n}/${d} на ${g}.`,steps:reduceSteps(n,d)}},
+  ()=>{const d=rnd(3,9),n=rnd(1,d-1),m=rnd(1,d-1),s=n+m;return {text:`${n}/${d} + ${m}/${d} = ?`,ans:N(s,d),h:`Сложи числители: ${n} + ${m} = ${s}, знаменатель ${d}.`,steps:[`В примере ${n}/${d} + ${m}/${d} знаменатели одинаковые`,`Сложи числители: ${n} + ${m} = ${s}. Получится ${s}/${d}`,...reduceSteps(s,d)]}}
  ])();
  if(level===1)return pick([
-  ()=>{const d1=rnd(2,8),d2=rnd(2,8),n1=rnd(1,d1-1),n2=rnd(1,Math.max(1,d2-1)),num=n1*d2+n2*d1,den=d1*d2;return {text:`${n1}/${d1} + ${n2}/${d2} = ?`,ans:N(num,den),h:`Приведи к общему знаменателю ${den} и сложи числители. ${reduceTip(num,den)}`}},
-  ()=>{let d1=rnd(3,9),d2=rnd(2,8);if(d1===d2)d2++;let n1=rnd(2,d1),n2=rnd(1,d2-1);if(n1*d2<n2*d1){[n1,d1,n2,d2]=[n2,d2,n1,d1]}const num=n1*d2-n2*d1,den=d1*d2;return {text:`${n1}/${d1} − ${n2}/${d2} = ?`,ans:N(num,den),h:`Общий знаменатель ${den}, затем вычти. ${reduceTip(num,den)}`}},
-  ()=>{const w=rnd(1,4),d=rnd(2,7),n=rnd(1,d-1),k=rnd(1,5),num=w*d+n+k;return {text:`${w} ${n}/${d} + ${k}/${d} = ?`,ans:N(num,d),h:`Смешанное число: ${w} = ${w*d}/${d}. Сложи числители: ${w*d+n} + ${k} = ${num}. ${reduceTip(num,d)}`}},
-  ()=>{const d=rnd(2,6),n1=rnd(1,5),n2=rnd(1,5),num=n1+n2*d;return {text:`${n1}/${d} + ${n2} = ?`,ans:N(num,d),h:`Целое ${n2} = ${n2*d}/${d}. Сложи числители: ${n1} + ${n2*d} = ${num}. ${reduceTip(num,d)}`}}
+  ()=>{const d1=rnd(2,8),d2=rnd(2,8),n1=rnd(1,d1-1),n2=rnd(1,Math.max(1,d2-1)),num=n1*d2+n2*d1,den=d1*d2;return {text:`${n1}/${d1} + ${n2}/${d2} = ?`,ans:N(num,den),h:`Общий знаменатель ${d1}×${d2} = ${den}.`,steps:[`Нужен общий знаменатель: ${d1} × ${d2} = ${den}`,`${n1}/${d1} = ${n1*d2}/${den}, ${n2}/${d2} = ${n2*d1}/${den}`,`Сложи числители: ${n1*d2} + ${n2*d1} = ${num}. Получится ${num}/${den}`,...reduceSteps(num,den)]}},
+  ()=>{let d1=rnd(3,9),d2=rnd(2,8);if(d1===d2)d2++;let n1=rnd(2,d1),n2=rnd(1,d2-1);if(n1*d2<n2*d1){[n1,d1,n2,d2]=[n2,d2,n1,d1]}const num=n1*d2-n2*d1,den=d1*d2;return {text:`${n1}/${d1} − ${n2}/${d2} = ?`,ans:N(num,den),h:`Общий знаменатель ${d1}×${d2} = ${den}.`,steps:[`Нужен общий знаменатель: ${d1} × ${d2} = ${den}`,`${n1}/${d1} = ${n1*d2}/${den}, ${n2}/${d2} = ${n2*d1}/${den}`,`Вычти числители: ${n1*d2} − ${n2*d1} = ${num}. Получится ${num}/${den}`,...reduceSteps(num,den)]}},
+  ()=>{const w=rnd(1,4),d=rnd(2,7),n=rnd(1,d-1),k=rnd(1,5),num=w*d+n+k;return {text:`${w} ${n}/${d} + ${k}/${d} = ?`,ans:N(num,d),h:`${w} = ${w*d}/${d}. Сложи числители: ${w*d+n} + ${k} = ${num}.`,steps:[`Смешанное ${w} ${n}/${d}: целую часть ${w} = ${w*d}/${d}`,`Неправильная дробь: ${w*d+n}/${d}`,`Прибавь ${k}/${d}: числители ${w*d+n} + ${k} = ${num}. Получится ${num}/${d}`,...reduceSteps(num,d)]}},
+  ()=>{const d=rnd(2,6),n1=rnd(1,5),n2=rnd(1,5),num=n1+n2*d;return {text:`${n1}/${d} + ${n2} = ?`,ans:N(num,d),h:`Целое ${n2} = ${n2*d}/${d}. Сложи: ${n1} + ${n2*d} = ${num}.`,steps:[`Целое ${n2} запиши как дробь: ${n2} = ${n2*d}/${d}`,`${n1}/${d} + ${n2*d}/${d}: сложи числители ${n1} + ${n2*d} = ${num}`,`Получится ${num}/${d}`,...reduceSteps(num,d)]}}
  ])();
  return pick([
-  ()=>{const a=rnd(1,6),b=rnd(2,8),c=rnd(1,6),d=rnd(2,8),num=a*c,den=b*d;return {text:`${a}/${b} × ${c}/${d} = ?`,ans:N(num,den),h:`Умножь числители и знаменатели: ${num}/${den}. ${reduceTip(num,den)}`}},
-  ()=>{const a=rnd(1,6),b=rnd(2,8),c=rnd(1,6),d=rnd(2,8),num=a*d,den=b*c;return {text:`${a}/${b} ÷ ${c}/${d} = ?`,ans:N(num,den),h:`Деление: умножь на перевёрнутую вторую дробь, получится ${num}/${den}. ${reduceTip(num,den)}`}},
-  ()=>{const a=rnd(1,5),b=rnd(2,7),c=rnd(1,5),d=rnd(2,7),e=rnd(1,4),f=rnd(2,6),num=a*c*f+e*b*d,den=b*d*f;return {text:`${a}/${b} × ${c}/${d} + ${e}/${f} = ?`,ans:N(num,den),h:`Сначала умножение, затем сложение с общим знаменателем. ${reduceTip(num,den)}`}},
-  ()=>{const w1=rnd(1,3),d1=rnd(2,6),n1=rnd(1,d1-1),w2=rnd(1,3),d2=rnd(2,6),n2=rnd(1,d2-1),num=(w1*d1+n1)*d2+(w2*d2+n2)*d1,den=d1*d2;return {text:`${w1} ${n1}/${d1} + ${w2} ${n2}/${d2} = ?`,ans:N(num,den),h:`Переведи смешанные числа в неправильные дроби и сложи. ${reduceTip(num,den)}`}},
-  ()=>{const a=rnd(2,5),b=rnd(2,7),c=rnd(1,4),num=a*c;return {text:`${a}/${b} × ${c} = ?`,ans:N(num,b),h:`${c} = ${c}/1. Умножь: ${num}/${b}. ${reduceTip(num,b)}`}}
+  ()=>{const a=rnd(1,6),b=rnd(2,8),c=rnd(1,6),d=rnd(2,8),num=a*c,den=b*d;return {text:`${a}/${b} × ${c}/${d} = ?`,ans:N(num,den),h:`Умножь: числители ${a}×${c} = ${num}, знаменатели ${b}×${d} = ${den}.`,steps:[`Умножение дробей: числитель на числитель, знаменатель на знаменатель`,`${a} × ${c} = ${num}, ${b} × ${d} = ${den}. Получится ${num}/${den}`,...reduceSteps(num,den)]}},
+  ()=>{const a=rnd(1,6),b=rnd(2,8),c=rnd(1,6),d=rnd(2,8),num=a*d,den=b*c;return {text:`${a}/${b} ÷ ${c}/${d} = ?`,ans:N(num,den),h:`Деление: ${a}/${b} × ${d}/${c} = ${num}/${den}.`,steps:[`Деление на дробь — умножение на перевёрнутую: ${a}/${b} × ${d}/${c}`,`${a} × ${d} = ${num}, ${b} × ${c} = ${den}. Получится ${num}/${den}`,...reduceSteps(num,den)]}},
+  ()=>{const a=rnd(1,5),b=rnd(2,7),c=rnd(1,5),d=rnd(2,7),e=rnd(1,4),f=rnd(2,6),p=a*c,q=b*d,num=p*f+e*q,den=q*f;return {text:`${a}/${b} × ${c}/${d} + ${e}/${f} = ?`,ans:N(num,den),h:`Сначала ${a}/${b} × ${c}/${d} = ${p}/${q}, затем сложение.`,steps:[`Сначала умножение: ${a} × ${c} = ${p}, ${b} × ${d} = ${q}. Это ${p}/${q}`,`Теперь ${p}/${q} + ${e}/${f}. Общий знаменатель ${q} × ${f} = ${den}`,`${p}/${q} = ${p*f}/${den}, ${e}/${f} = ${e*q}/${den}. Сложи: ${p*f} + ${e*q} = ${num}`,...reduceSteps(num,den)]}},
+  ()=>{const w1=rnd(1,3),d1=rnd(2,6),n1=rnd(1,d1-1),w2=rnd(1,3),d2=rnd(2,6),n2=rnd(1,d2-1),a=w1*d1+n1,b=w2*d2+n2,num=a*d2+b*d1,den=d1*d2;return {text:`${w1} ${n1}/${d1} + ${w2} ${n2}/${d2} = ?`,ans:N(num,den),h:`${w1} ${n1}/${d1} = ${a}/${d1}, ${w2} ${n2}/${d2} = ${b}/${d2}.`,steps:[`${w1} ${n1}/${d1} = ${a}/${d1}, ${w2} ${n2}/${d2} = ${b}/${d2}`,`Общий знаменатель ${d1} × ${d2} = ${den}`,`${a}/${d1} = ${a*d2}/${den}, ${b}/${d2} = ${b*d1}/${den}. Сложи: ${a*d2} + ${b*d1} = ${num}`,...reduceSteps(num,den)]}},
+  ()=>{const a=rnd(2,5),b=rnd(2,7),c=rnd(1,4),num=a*c;return {text:`${a}/${b} × ${c} = ?`,ans:N(num,b),h:`${c} = ${c}/1. Умножь: ${a}×${c} = ${num}, знаменатель ${b}.`,steps:[`Целое ${c} — это ${c}/1`,`Умножь: ${a} × ${c} = ${num}, знаменатель ${b} × 1 = ${b}. Получится ${num}/${b}`,...reduceSteps(num,b)]}}
  ])();
 }
 
@@ -454,10 +461,11 @@ function qSystem(level){
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function fracHTML(n,d){
- const a=N(n,d);
- if(a.d===1)return nn(a.n);
- const sign=a.n<0?'<span class="frac-s">−</span>':'';
- return `<span class="frac">${sign}<span class="frac-inner"><span class="num">${Math.abs(a.n)}</span><span class="den">${a.d}</span></span></span>`;
+ n=+n;d=+d;
+ if(!d)return String(n);
+ if(d<0){n=-n;d=-d}
+ const sign=n<0?'<span class="frac-s">−</span>':'';
+ return `<span class="frac">${sign}<span class="frac-inner"><span class="num">${Math.abs(n)}</span><span class="den">${d}</span></span></span>`;
 }
 function mathify(s){
  s=esc(s);

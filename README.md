@@ -1,6 +1,6 @@
 # Sashosha Math
 
-Математический тренажёр: [sashoshaa.github.io/sashosha-math](https://sashoshaa.github.io/sashosha-math/?v=17)
+Математический тренажёр: [sashoshaa.github.io/sashosha-math](https://sashoshaa.github.io/sashosha-math/?v=18)
 
 Telegram: [@sashoshamath](https://t.me/sashoshamath)
 
